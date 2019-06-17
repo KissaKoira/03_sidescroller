@@ -63,24 +63,6 @@ public class cameraController : MonoBehaviour
 
         camSpeed = distance / maxDistance / 10;
 
-        Debug.Log(distance + " " + inPos);
-
-        if (distance > 0.3)
-        {
-            inPos = false;
-        }
-        else
-        {
-            inPos = true;
-        }
-
-        if(!inPos)
-        {
-            transform.position = Vector3.Lerp(transform.position, target, Mathf.Clamp(camSpeed, minCamSpeed, maxCamSpeed));
-        }
-        else
-        {
-            transform.position = target;
-        }
+        transform.position = Vector3.Lerp(transform.position, target, Mathf.Clamp(camSpeed, minCamSpeed, maxCamSpeed));
     }
 }
