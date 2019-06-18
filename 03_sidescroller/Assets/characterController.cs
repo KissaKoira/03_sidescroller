@@ -5,11 +5,20 @@ using UnityEngine;
 public class characterController : MonoBehaviour
 {
     public GameObject player;
+    public Animator animator;
     public float maxSpeed;
     public float smoothing = 5;
     public float jumpForce = 2;
     public string orientation = "Right";
     float speed = 0;
+    public GameObject strikeHitBox;
+    bool striking = false;
+    float strikeCounter = 0;
+
+    private void Start()
+    {
+        strikeHitBox.SetActive(false);
+    }
 
     private void Move(string str)
     {
@@ -35,28 +44,33 @@ public class characterController : MonoBehaviour
 
     private void Jump()
     {
+        animator.SetBool("Jumping", true);
+
         Vector2 playerVelocity = player.GetComponent<Rigidbody2D>().velocity;
 
-        if (playerVelocity.y == 0)
+        if (Mathf.Abs(playerVelocity.y) < 0.1)
         {
             player.GetComponent<Rigidbody2D>().velocity = new Vector2(playerVelocity.x, jumpForce);
         }
     }
 
+    private void Strike()
+    {
+        strikeHitBox.SetActive(true);
+        striking = true;
+    }
+
     private void Flip(string str)
     {
-        if (str == "Right")
+        if (str != orientation)
         {
-            Vector3 temp = transform.localScale;
-            temp.x *= -1;
-            transform.localScale = temp;
+            transform.Rotate(0f, 180f, 0f);
         }
-        else if (str == "Left")
-        {
-            Vector3 temp = transform.localScale;
-            temp.x = Mathf.Abs(temp.x);
-            transform.localScale = temp;
-        }
+    }
+
+    private void Update()
+    {
+        animator.SetFloat("Speed", Mathf.Abs(GetComponent<Rigidbody2D>().velocity.x));
     }
 
     void FixedUpdate()
@@ -68,17 +82,28 @@ public class characterController : MonoBehaviour
             Jump();
         }
 
+        if(Input.GetButtonDown("Fire1"))
+        {
+            Strike();
+        }
+
         if(horizontal > 0)
         {
-            Move("Right");
-            Flip("Right");
-            orientation = "Right";
+            if (striking == false)
+            {
+                Move("Right");
+                Flip("Right");
+                orientation = "Right";
+            }
         }
         else if (horizontal < 0)
         {
-            Move("Left");
-            Flip("Left");
-            orientation = "Left";
+            if (striking == false)
+            {
+                Move("Left");
+                Flip("Left");
+                orientation = "Left";
+            }
         }
         else
         {
@@ -100,6 +125,42 @@ public class characterController : MonoBehaviour
             }
 
             player.GetComponent<Rigidbody2D>().velocity = playerVelocity;
+        }
+
+        if (Mathf.Abs(GetComponent<Rigidbody2D>().velocity.y) < 0.1)
+        {
+            animator.SetBool("Jumping", false);
+        }
+
+            if (striking)
+        {
+            Vector3 playerVelocity = player.GetComponent<Rigidbody2D>().velocity;
+            float newVelocity = playerVelocity.x;
+
+            if(Mathf.Abs(playerVelocity.x) > 4 * Time.fixedDeltaTime)
+            {
+                if (playerVelocity.x > 0)
+                {
+                    newVelocity = playerVelocity.x - (4 * Time.fixedDeltaTime);
+                }
+                else
+                {
+                    newVelocity = playerVelocity.x + (4 * Time.fixedDeltaTime);
+                }
+            }
+            
+            player.GetComponent<Rigidbody2D>().velocity = new Vector3(newVelocity, playerVelocity.y, 0f);
+
+            speed = 0;
+
+            strikeCounter += Time.fixedDeltaTime;
+        }
+
+        if(strikeCounter >= 0.5)
+        {
+            strikeHitBox.SetActive(false);
+            striking = false;
+            strikeCounter = 0;
         }
     }
 }

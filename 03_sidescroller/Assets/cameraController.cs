@@ -6,7 +6,10 @@ public class cameraController : MonoBehaviour
 {
     public GameObject player;
     public GameObject background;
+    public GameObject camFollow;
     public float camDistance;
+    public float camPosition;
+    float playerY;
     float camSpeed;
     public float minCamSpeed = 0.3f;
     public float maxCamSpeed = 0.7f;
@@ -16,7 +19,8 @@ public class cameraController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        playerY = player.transform.position.y;
+        camFollow.transform.position = new Vector3(player.transform.position.x, playerY + camPosition, transform.position.z);
     }
 
     // Update is called once per frame
@@ -24,8 +28,8 @@ public class cameraController : MonoBehaviour
     {
         string playerOrientation = GameObject.Find("Player").GetComponent<characterController>().orientation;
 
-        Vector2 playerPos = player.transform.position;
-        Vector2 newCamPos = new Vector2(transform.position.x, transform.position.y);
+        Vector2 playerPos = new Vector3(player.transform.position.x, playerY + camPosition, player.transform.position.z);
+        Vector2 newCamPos = new Vector2(camFollow.transform.position.x, transform.position.y);
         Vector2 bgMin = background.GetComponent<BoxCollider2D>().bounds.min;
         Vector2 bgMax = background.GetComponent<BoxCollider2D>().bounds.max;
 
@@ -53,8 +57,8 @@ public class cameraController : MonoBehaviour
             newCamPos.x -= camDistance;
         }
 
-        Vector3 target = new Vector3(newCamPos.x, newCamPos.y, transform.position.z);
-        float distance = Mathf.Abs(transform.position.x - target.x);
+        Vector3 target = new Vector3(newCamPos.x, newCamPos.y, camFollow.transform.position.z);
+        float distance = Mathf.Abs(camFollow.transform.position.x - target.x);
 
         if (distance > maxDistance)
         {
@@ -63,6 +67,9 @@ public class cameraController : MonoBehaviour
 
         camSpeed = distance / maxDistance / 10;
 
-        transform.position = Vector3.Lerp(transform.position, target, Mathf.Clamp(camSpeed, minCamSpeed, maxCamSpeed));
+        if (playerPos.x < maxX && playerPos.x > minX)
+        {
+            camFollow.transform.position = Vector3.Lerp(camFollow.transform.position, target, Mathf.Clamp(camSpeed, minCamSpeed, maxCamSpeed));
+        }
     }
 }
