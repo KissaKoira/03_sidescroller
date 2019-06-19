@@ -9,11 +9,13 @@ public class characterController : MonoBehaviour
     public float maxSpeed;
     public float smoothing = 5;
     public float jumpForce = 2;
+    public float playerSlashSlow = 0;
     public string orientation = "Right";
     float speed = 0;
     public GameObject strikeHitBox;
     bool striking = false;
     float strikeCounter = 0;
+    float strikeMomentum;
 
     private void Start()
     {
@@ -58,6 +60,8 @@ public class characterController : MonoBehaviour
     {
         strikeHitBox.SetActive(true);
         striking = true;
+        animator.SetBool("Striking", true);
+        strikeMomentum = GetComponent<Rigidbody2D>().velocity.x;
     }
 
     private void Flip(string str)
@@ -132,26 +136,26 @@ public class characterController : MonoBehaviour
             animator.SetBool("Jumping", false);
         }
 
-            if (striking)
+        if (striking)
         {
             Vector3 playerVelocity = player.GetComponent<Rigidbody2D>().velocity;
             float newVelocity = playerVelocity.x;
 
-            if(Mathf.Abs(playerVelocity.x) > 4 * Time.fixedDeltaTime)
+            if(Mathf.Abs(playerVelocity.x) > playerSlashSlow * Time.fixedDeltaTime)
             {
                 if (playerVelocity.x > 0)
                 {
-                    newVelocity = playerVelocity.x - (4 * Time.fixedDeltaTime);
+                    newVelocity = playerVelocity.x - (playerSlashSlow * Time.fixedDeltaTime);
                 }
                 else
                 {
-                    newVelocity = playerVelocity.x + (4 * Time.fixedDeltaTime);
+                    newVelocity = playerVelocity.x + (playerSlashSlow * Time.fixedDeltaTime);
                 }
             }
             
-            player.GetComponent<Rigidbody2D>().velocity = new Vector3(newVelocity, playerVelocity.y, 0f);
-
-            speed = 0;
+            //use newVelocity for x velocity if player is not on horseback
+            //use strikeMomentum for x velocity if player is on horseback
+            player.GetComponent<Rigidbody2D>().velocity = new Vector3(strikeMomentum, playerVelocity.y, 0f);
 
             strikeCounter += Time.fixedDeltaTime;
         }
@@ -161,6 +165,7 @@ public class characterController : MonoBehaviour
             strikeHitBox.SetActive(false);
             striking = false;
             strikeCounter = 0;
+            animator.SetBool("Striking", false);
         }
     }
 }

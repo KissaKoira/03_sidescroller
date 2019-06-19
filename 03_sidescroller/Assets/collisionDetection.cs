@@ -23,19 +23,26 @@ public class collisionDetection : MonoBehaviour
     {
         if(col.gameObject.GetComponent<Rigidbody2D>() != null)
         {
-            shake.CamShake();
-
-            float direction = 0f;
-
-            if(player.transform.position.x < col.gameObject.transform.position.x)
+            if(col.name != "Dummy")
             {
-                direction = 2f;
+                shake.CamShake();
+
+                float direction = 0f;
+                float angularVel = 0f;
+
+                if (player.transform.position.x < col.gameObject.transform.position.x)
+                {
+                    direction = 2f;
+                    angularVel = -100f;
+                }
+                else
+                {
+                    direction = -2f;
+                    angularVel = 100f;
+                }
+                col.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector3(direction, 2f, 0f);
+                col.gameObject.GetComponent<Rigidbody2D>().angularVelocity = angularVel;
             }
-            else
-            {
-                direction = -2f;
-            }
-            col.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector3(direction, 1f, 0f);
         }
     }
 }
